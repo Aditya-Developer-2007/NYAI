@@ -1,0 +1,695 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>NYAI — Legal AI Assistant</title>
+
+  <!-- Favicon alag file mein nahi, direct SVG code daal diya. Fast load hota hai, no extra request. -->
+  <link rel="icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0iIzNiODJmNiIgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0Ij4KICA8cGF0aCBkPSJNMTEuOTkgMi4wMUMxMC44NiAyLjAxIDEwIDIgMTAgMy4xNFY1aDRWMy4xNEMxNCAyIDEzLjE0IDIuMDEgMTEuOTkgMi4wMVpNNyA2QzUuMyA2IDQgNy4zIDQgOVYxOWMwIDEuMS45IDIgMiAyaDEwYzEuMSAwIDItLjkgMi0yVjljMC0xLjctMS4zLTMtMy0zSDdaTTIgMTBDMiA5LjQ1IDIuNDUgOSAzIDlWMTFjLS41NSAwLTEtLjQ1LTEtMVptMTggMGMwIC41NS0uNDUgMS0xIDFWOWMuNTUgMCAxIC40NSAxIDFaIi8+Cjwvc3ZnPg==">
+
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  
+  <style>
+    /* Bhai, saare colors aur theme ka magic yahan se hai. Light/dark mode ke liye bas variables badal do. */
+    :root {
+      --bg1: #0f172a;               
+      --bg2: #1e293b;               
+      --card: #1e293b;              
+      --surface: rgba(255, 255, 255, 0.05); 
+      --text: #f8fafc;              
+      --text-secondary: #cbd5e1;    
+      --muted: #94a3b8;             
+      --accent: #3b82f6;            
+      --accent-light: #60a5fa;      
+      --border: rgba(255, 255, 255, 0.1); 
+      --glass: rgba(255, 255, 255, 0.03); 
+      --card-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+      --heading-gradient: linear-gradient(135deg, #60a5fa 0%, #fff 100%); 
+    }
+
+    [data-theme="light"] {
+      --bg1: #ffffff;
+      --bg2: #f8fafc;
+      --card: #ffffff;
+      --surface: #f1f5f9; 
+      --text: #0f172a;
+      --text-secondary: #334155;
+      --muted: #64748b;
+      --accent: #2563eb;
+      --accent-light: #3b82f6;
+      --border: #e2e8f0;
+      --glass: rgba(255, 255, 255, 0.9);
+      --card-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+      --heading-gradient: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: 'Inter', sans-serif; 
+      background: linear-gradient(135deg, var(--bg1), var(--bg2));
+      color: var(--text);
+      min-height: 100vh;
+      -webkit-font-smoothing: antialiased; 
+      -moz-osx-font-smoothing: grayscale;
+      transition: background-color 0.3s ease, color 0.3s ease; 
+    }
+    
+    header {
+      position: sticky; 
+      top: 0;
+      z-index: 50; 
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 18px 28px;
+      background: var(--glass);
+      backdrop-filter: blur(8px); 
+      border-bottom: 1px solid var(--border);
+      height: 80px;
+    }
+
+    .brand { display: flex; align-items: center; gap: 12px; }
+
+    .logo {
+      width: 44px; height: 44px; border-radius: 10px; display: grid; place-items: center;
+      background: linear-gradient(135deg, #60a5fa, #06b6d4); font-weight: 800; color: #04244b;
+      box-shadow: 0 6px 18px rgba(2, 6, 23, 0.6);
+    }
+    
+    h1 { font-size: 1.05rem; letter-spacing: .6px; }
+
+    nav {
+      position: absolute;
+      left: 50%;
+      /* Absolute positioning se center karne ki classic ninja technique. */
+      transform: translateX(-50%); 
+      display: flex;
+      gap: 24px;
+    }
+
+    nav a {
+      color: var(--muted); text-decoration: none; font-weight: 600; padding: 8px 16px;
+      border-radius: 8px; transition: all 0.3s ease; 
+    }
+
+    nav a:hover, nav a.active { background: var(--surface); color: var(--text); }
+    
+    main { max-width: 1100px; margin: 0 auto; padding: 0 20px 80px; }
+
+    .hero {
+      min-height: calc(100vh - 120px); display: grid; grid-template-columns: 1fr 480px;
+      gap: 32px; align-items: start; margin: 40px 0;
+    }
+
+    .intro {
+      padding: 32px; background: var(--card); border-radius: 16px;
+      border: 1px solid var(--border); box-shadow: var(--card-shadow);
+    }
+
+    .title {
+      font-size: 2.8rem; font-weight: 800; line-height: 1.1; margin-bottom: 16px;
+      background: var(--heading-gradient);
+      background-clip: text;
+      -webkit-background-clip: text; 
+      -webkit-text-fill-color: transparent;
+    }
+
+    .lead { color: var(--muted); font-size: 1.05rem; margin-bottom: 18px; }
+
+    .chips { display: flex; gap: 10px; flex-wrap: wrap; }
+
+    .chip {
+      background: var(--surface); padding: 8px 16px; border-radius: 999px;
+      font-weight: 600; cursor: pointer; border: 1px solid var(--border);
+      transition: all 0.2s ease;
+    }
+
+    .chip:hover {
+      transform: translateY(-2px); background: var(--accent);
+      color: white; border-color: var(--accent);
+    }
+    
+    .chat-card {
+      border-radius: 20px; background: var(--card); padding: 16px;
+      border: 1px solid var(--border); box-shadow: var(--card-shadow);
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .chat-card:hover { transform: translateY(-5px); box-shadow: 0 20px 40px rgba(0, 0, 0, 0.12); }
+
+    #messages {
+      height: 420px; overflow-y: auto; padding: 18px;
+      background: linear-gradient(180deg, rgba(0, 0, 0, 0.12), rgba(255, 255, 255, 0.02));
+      border-radius: 10px; display: flex; flex-direction: column;
+      gap: 12px; scroll-behavior: smooth;
+    }
+    
+    .msg {
+      max-width: 78%; padding: 12px 14px; border-radius: 12px;
+      font-size: 0.98rem; line-height: 1.4; opacity: 0; transform: translateY(6px);
+      animation: fadeUp 0.3s forwards; 
+    }
+
+    .msg.user { margin-left: auto; background: var(--accent); color: white; border: none; }
+    .msg.bot { background: var(--surface); color: var(--text); border: 1px solid var(--border); }
+
+    .meta { display: block; font-size: 0.72rem; color: rgba(255, 255, 255, 0.55); margin-top: 8px; }
+
+    @keyframes fadeUp { to { opacity: 1; transform: none; } }
+
+    .input-row { display: flex; gap: 10px; margin-top: 10px; align-items: center; }
+
+    .input-row input {
+      flex: 1; padding: 12px 14px; border-radius: 10px;
+      border: 1px solid var(--border); background: var(--surface);
+      color: var(--text); font-size: 0.98rem;
+    }
+
+    .input-row input::placeholder { color: var(--muted); opacity: 0.8; }
+
+    .input-row input:focus {
+      outline: none; border-color: var(--accent);
+      box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
+    }
+
+    .input-row button {
+      background: linear-gradient(135deg, #06b6d4, #2563eb); border: none;
+      color: #04244b; font-weight: 700; padding: 10px 14px;
+      border-radius: 10px; cursor: pointer; box-shadow: 0 8px 18px rgba(2, 6, 23, 0.4);
+      transition: all 0.3s ease;
+    }
+
+    .input-row button:active { transform: translateY(1px); }
+    
+    .article-list { margin-top: 10px; padding-left: 18px; }
+
+    .article-list li {
+      margin: 6px 0; padding: 6px 8px; background: rgba(255, 255, 255, 0.02);
+      border-radius: 8px; font-size: 0.95rem; color: var(--muted);
+    }
+
+    .section-container { max-width: 1100px; margin: 0 auto; padding: 80px 20px; }
+
+    .section-title {
+      font-size: 2.5rem; font-weight: 800; text-align: center; margin-bottom: 48px;
+      background: var(--heading-gradient); 
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .about-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 32px; }
+
+    .about-card {
+      background: var(--card); border: 1px solid var(--border); padding: 32px;
+      border-radius: 16px; text-align: center; transition: transform 0.3s ease;
+    }
+
+    .about-card:hover { transform: translateY(-5px); }
+
+    .contact-form {
+      max-width: 600px; margin: 0 auto; background: var(--card); padding: 40px;
+      border-radius: 16px; border: 1px solid var(--border);
+    }
+
+    .submit-btn {
+      width: 100%; padding: 12px; background: var(--accent); color: white;
+      border: none; border-radius: 8px; font-size: 1rem; font-weight: 600;
+      cursor: pointer; transition: transform 0.3s ease;
+    }
+
+    .submit-btn:hover { transform: translateY(-2px); }
+    
+    .footer {
+      background: var(--card); border-top: 1px solid var(--border); padding: 24px 20px;
+      margin-top: 40px; text-align: center; color: var(--muted); font-size: 0.95rem;
+    }
+
+    .theme-toggle {
+      background: none; border: none; padding: 8px 12px; cursor: pointer;
+      color: var(--muted); font-size: 1.2rem; border-radius: 8px;
+      transition: all 0.3s ease;
+    }
+
+    .theme-toggle:hover { background: var(--surface); transform: translateY(-1px); }
+
+    .chat-actions {
+      display: flex;
+      justify-content: center;
+      gap: 12px;
+      margin-top: 16px;
+      padding-top: 12px;
+      border-top: 1px solid var(--border);
+    }
+
+    .action-btn {
+      background: var(--surface);
+      color: var(--text);
+      border: 1px solid var(--border);
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-size: 0.9rem;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .action-btn:hover {
+      background: var(--accent);
+      color: white;
+    }
+
+    .disclaimer {
+      text-align: center;
+      color: var(--muted);
+      font-size: 0.85rem;
+      margin-top: 12px;
+    }
+    
+    /* Responsive ke liye jugaad. */
+    @media (max-width: 980px) {
+      header { flex-direction: column; height: auto; padding: 14px; }
+      nav { position: relative; left: 0; transform: none; margin-top: 10px; }
+      .hero { grid-template-columns: 1fr; min-height: auto; }
+    }
+
+    @media (max-width: 768px) {
+      .section-container { padding: 40px 20px; }
+      .section-title { font-size: 2rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="brand">
+      <div class="logo">NY</div>
+      <div>
+        <h1>NYAI</h1>
+        <div style="font-size:12px;color:var(--muted)">Legal AI Assistant</div>
+      </div>
+    </div>
+    <nav>
+      <a href="#hero">Home</a>
+      <a href="#about-section">About</a>
+      <a href="#contact-section">Contact</a>
+    </nav>
+    <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme">
+      <span class="theme-icon">🌙</span>
+    </button>
+  </header>
+
+  <main>
+    <section class="hero" id="hero">
+      <div class="intro">
+        <h2 class="title">NYAI — Understand law quickly. Ask anything.</h2>
+        <p class="lead">Type a legal term (e.g., <strong>IPC</strong>, <strong>FIR</strong>, <strong>Bail</strong>) or just say hello. NYAI provides a short explanation and related sections.</p>
+        <div class="chips" id="suggestChips">
+          <div class="chip" data-q="ipc">IPC</div>
+          <div class="chip" data-q="fir">FIR</div>
+          <div class="chip" data-q="bail">Bail</div>
+          <div class="chip" data-q="constitution">Constitution</div>
+          <div class="chip" data-q="rights">Rights</div>
+        </div>
+      </div>
+
+      <div class="chat-card">
+        <div style="font-weight:700; margin-bottom: 8px;">Chat with NYAI</div>
+        <div id="messages" aria-live="polite" role="log"></div>
+        <div class="input-row">
+          <input id="userInput" placeholder="Ask about law, FIR, IPC..." aria-label="Type your question" />
+          <button id="sendBtn" aria-label="Send message">Send</button>
+        </div>
+        <div class="chat-actions">
+          <button id="resetBtn" class="action-btn">Reset Chat</button>
+        </div>
+        <div class="disclaimer">For educational purposes only</div>
+      </div>
+    </section>
+
+    <section id="about-section">
+      <div class="section-container">
+        <h2 class="section-title">About NYAI</h2>
+        <div class="about-grid">
+          <div class="about-card">
+            <h3>⚖️ Who We Are</h3>
+            <p>NYAI is an innovative legal AI assistant designed to make law accessible and understandable for everyone.</p>
+          </div>
+          <div class="about-card">
+            <h3>🎯 Our Mission</h3>
+            <p>To democratize legal knowledge by making it simple, accessible, and easy to understand for all citizens.</p>
+          </div>
+          <div class="about-card">
+            <h3>🛡️ Privacy First</h3>
+            <p>Your conversations are private. We don't store any personal data. This is a demo and responses are pre-defined.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="contact-section">
+      <div class="section-container">
+        <h2 class="section-title">Contact Us</h2>
+        <form class="contact-form">
+          <input type="text" placeholder="Your Name" required style="margin-bottom: 16px; width: 100%; padding: 12px; border-radius: 8px; border: 1px solid var(--border); background: var(--surface); color: var(--text);">
+          <input type="email" placeholder="Your Email" required style="margin-bottom: 16px; width: 100%; padding: 12px; border-radius: 8px; border: 1px solid var(--border); background: var(--surface); color: var(--text);">
+          <textarea placeholder="Your Message" rows="4" required style="margin-bottom: 16px; width: 100%; padding: 12px; border-radius: 8px; border: 1px solid var(--border); background: var(--surface); color: var(--text);"></textarea>
+          <button type="submit" class="submit-btn">Send Message</button>
+        </form>
+      </div>
+    </section>
+  </main>
+  
+  <footer class="footer">
+      © 2023 NYAI - Legal AI Assistant
+  </footer>
+
+  <script>
+    // Pura HTML load hone ke baad hi script chalao, warna element nahi milega aur error aayega. Safety first.
+    document.addEventListener('DOMContentLoaded', () => {
+
+      const messagesDiv = document.getElementById('messages');
+      const userInput = document.getElementById('userInput');
+      const sendBtn = document.getElementById('sendBtn');
+      const suggestionChips = document.querySelectorAll('.chip');
+      const themeToggle = document.getElementById('themeToggle');
+      const themeIcon = themeToggle.querySelector('.theme-icon');
+      const resetBtn = document.getElementById('resetBtn');
+      
+      //Keyword ke basis pe response milta hai.
+       const knowledgeBase = {
+      /* --- Legal keywords (50+) --- */
+      "ipc": {
+        definition: "IPC (Indian Penal Code) is the primary criminal code in India detailing offences and penalties.",
+        articles: ["Key IPC Sections You Should Know","Evolution of Indian Penal Code","Landmark IPC Cases in India"]
+      },
+      "fir": {
+        definition: "FIR (First Information Report) is the initial report lodged with police for cognizable offences.",
+        articles: ["Importance of FIR","How to File an FIR","Supreme Court Guidelines on FIR"]
+      },
+      "bail": {
+        definition: "Bail is conditional release of an accused pending trial, often requiring a guarantee or bond.",
+        articles: ["Understanding Bail Procedures","Difference Between Bail and Parole","Supreme Court Judgments on Bail"]
+      },
+      "constitution": {
+        definition: "The Constitution is the supreme law that defines the structure of government and fundamental rights.",
+        articles: ["Fundamental Rights in Constitution","Directive Principles Explained","Constitutional Amendments"]
+      },
+      "rights": {
+        definition: "Rights are legal entitlements granted to individuals — e.g., fundamental rights under the Constitution.",
+        articles: ["Human Rights in India","Fundamental Rights vs Duties","Landmark Rights Judgments"]
+      },
+      "evidence": {
+        definition: "Evidence includes documents, testimony, and material presented in court to establish facts.",
+        articles: ["Types of Evidence in Court","Admissibility of Evidence","Digital Evidence in Law"]
+      },
+      "contract": {
+        definition: "A contract is a legally enforceable agreement between parties with offer, acceptance, and consideration.",
+        articles: ["Basics of Contract Law","Types of Contracts","Landmark Contract Law Cases"]
+      },
+      "criminal": {
+        definition: "Criminal law defines offences and prescribes punishments for acts harmful to society.",
+        articles: ["Criminal Procedure Code","Stages of Criminal Trial","Recent Criminal Law Reforms"]
+      },
+      "civil": {
+        definition: "Civil law deals with disputes between private parties, such as contracts and property.",
+        articles: ["Civil Procedure Code","Civil Rights Cases","Civil vs Criminal Law"]
+      },
+      "parliament": {
+        definition: "Parliament is the legislative body responsible for making laws at the national level.",
+        articles: ["Law-Making Process","Role of Rajya Sabha","Recent Parliamentary Bills"]
+      },
+      "police": {
+        definition: "Police enforce law, investigate crimes and maintain public order under legal limits.",
+        articles: ["Police Powers","Police Reforms","Citizen Rights vs Police"]
+      },
+      "privacy": {
+        definition: "Privacy law protects personal data and autonomy; includes data protection and surveillance concerns.",
+        articles: ["Right to Privacy Judgment","Data Protection Bill","Privacy in Digital Age"]
+      },
+      "consumer": {
+        definition: "Consumer law protects buyers against unfair trade practices and defective goods/services.",
+        articles: ["Consumer Protection Act","Rights of Consumers","E-commerce Consumer Rights"]
+      },
+      "company": {
+        definition: "Company law governs formation, management, and regulation of companies and corporate conduct.",
+        articles: ["Companies Act Overview","Corporate Governance","LLP vs Pvt Ltd"]
+      },
+      "tax": {
+        definition: "Tax law governs imposition and collection of taxes by government bodies (income tax, GST, etc.).",
+        articles: ["Income Tax Basics","GST Explained","Recent Tax Reforms"]
+      },
+      "environment": {
+        definition: "Environment law regulates pollution, conservation, and sustainable use of natural resources.",
+        articles: ["Environment Protection Act","Pollution Control Laws","National Green Tribunal"]
+      },
+      "labour": {
+        definition: "Labour law covers worker rights, wages, safety, social security and trade unions.",
+        articles: ["New Labour Codes","Minimum Wage Laws","Workers’ Rights in India"]
+      },
+      "arbitration": {
+        definition: "Arbitration is an alternative dispute resolution where parties use an arbitrator instead of courts.",
+        articles: ["Arbitration and Conciliation Act","Advantages of Arbitration","International Arbitration"]
+      },
+      "tort": {
+        definition: "Tort law provides remedies for civil wrongs which cause harm or loss to others.",
+        articles: ["Basics of Tort Law","Negligence in Tort","Tort vs Crime"]
+      },
+      "intellectual": {
+        definition: "IPR (Intellectual Property Rights) protects creations like patents, trademarks, and copyrights.",
+        articles: ["Patent Basics","Copyright Act Explained","Trademark Protection"]
+      },
+      "human": {
+        definition: "Human rights are universal entitlements essential for dignity and freedom of every person.",
+        articles: ["Universal Human Rights","Human Rights in India","Role of NHRC"]
+      },
+      "succession": {
+        definition: "Succession law governs inheritance and distribution of deceased persons' property.",
+        articles: ["Hindu Succession Act","Intestate Succession","Women’s Inheritance Rights"]
+      },
+      "bankruptcy": {
+        definition: "Bankruptcy/insolvency law manages debt resolution and insolvency proceedings for individuals and companies.",
+        articles: ["Insolvency and Bankruptcy Code","Bankruptcy Process","Corporate Insolvency Cases"]
+      },
+      "probation": {
+        definition: "Probation allows offenders to remain under supervision instead of serving full prison terms.",
+        articles: ["Probation vs Parole","Conditions of Probation","Rehabilitation Through Probation"]
+      },
+      "parole": {
+        definition: "Parole is conditional release of a prisoner before completion of sentence under supervision.",
+        articles: ["Parole Procedures","Parole vs Bail","Notable Parole Cases"]
+      },
+      "mediation": {
+        definition: "Mediation is a facilitated negotiation process to help parties reach an amicable settlement.",
+        articles: ["Mediation Techniques","Court-Annexed Mediation","Mediation Advantages"]
+      },
+      "pocso": {
+        definition: "POCSO (Protection of Children from Sexual Offences) Act protects children from sexual abuse.",
+        articles: ["Understanding POCSO","Reporting Child Abuse","POCSO Case Studies"]
+      },
+      "juvenile": {
+        definition: "Juvenile law addresses criminal responsibility and rehabilitation of minors.",
+        articles: ["Juvenile Justice Act","Child Rehabilitation","Juvenile Courts"]
+      },
+      "domestic violence": {
+        definition: "Domestic violence laws protect victims of abuse within family and intimate relationships.",
+        articles: ["Domestic Violence Act","Protection Orders","Support Services for Survivors"]
+      },
+      "nda": {
+        definition: "NDA usually refers to Non-Disclosure Agreements used to protect confidential information.",
+        articles: ["NDA Essentials","Drafting NDAs","Enforcing NDAs"]
+      },
+      "election": {
+        definition: "Election law governs electoral processes, campaign finance and representation rules.",
+        articles: ["Representation of People Act","Election Commission Role","Electoral Reforms"]
+      },
+      "traffic": {
+        definition: "Traffic law regulates vehicle operation, road safety and associated penalties.",
+        articles: ["Motor Vehicles Act","Traffic Offences","Road Safety Measures"]
+      },
+      "immigration": {
+        definition: "Immigration law covers entry, visas, residency and deportation of foreign nationals.",
+        articles: ["Visa Types Explained","Immigration Procedures","Refugee Law Basics"]
+      },
+      "land": {
+        definition: "Land law handles ownership, transfers, leases and land acquisition rules.",
+        articles: ["Land Acquisition Act","Property Registration","Land Dispute Resolution"]
+      },
+      "mortgage": {
+        definition: "Mortgage law governs property used as security for a loan and rights of mortgagor/mortgagee.",
+        articles: ["Types of Mortgages","Mortgage vs Charge","Foreclosure Procedures"]
+      },
+      "insurance": {
+        definition: "Insurance law deals with contracts of indemnity and regulation of insurers/insuree rights.",
+        articles: ["IRDA Role","Types of Insurance","Claim Disputes"]
+      },
+      "medical": {
+        definition: "Medical law covers professional standards, negligence and patients' rights.",
+        articles: ["Medical Negligence Cases","Patients Rights","Ethics in Healthcare"]
+      },
+      "contractor": {
+        definition: "Laws related to contractors cover contracts for services, liability and payments.",
+        articles: ["Contractor Disputes","Payment Recovery","Contract Drafting Tips"]
+      },
+      "passport": {
+        definition: "Passport law governs issuance, renewal and forfeiture of passports.",
+        articles: ["Passport Procedures","Grounds for Revocation","Consular Services"]
+      },
+      "foreign": {
+        definition: "Foreign law refers to international legal relations: treaties, extradition and trade.",
+        articles: ["Extradition Law Basics","International Treaties","Foreign Trade Regulations"]
+      },
+      "tribunal": {
+        definition: "Tribunals are specialized quasi-judicial bodies for particular disputes (tax, company, NCLT).",
+        articles: ["Types of Tribunals","NCLT and NCLAT","Appeals from Tribunals"]
+      },
+      "writ": {
+        definition: "Writs (habeas corpus, mandamus, certiorari, prohibition, quo warranto) are remedies to protect rights.",
+        articles: ["Types of Writs","Habeas Corpus Cases","Using Writs Effectively"]
+      },
+      "legal aid": {
+        definition: "Legal aid schemes provide free legal assistance to eligible persons.",
+        articles: ["Legal Services Authorities Act","How to Access Legal Aid","Role of Pro Bono Lawyers"]
+      },
+      "prison": {
+        definition: "Prison law governs treatment, rights and rehabilitation of incarcerated persons.",
+        articles: ["Prisoner Rights","Prison Reforms","Rehabilitation Programs"]
+      },
+      "evidence act": {
+        definition: "Evidence Act sets rules for admissibility and types of evidence in courts.",
+        articles: ["Indian Evidence Act Basics","Documentary Evidence","Witness Examination"]
+      },
+
+      /* --- Casual / conversational keywords (~25) --- */
+ "hello":{definition:"Namaste 🙏! Main NYAI hoon, aapka legal dost. Kya poochna chahoge?",articles:["IPC Basics","Fundamental Rights","FIR Procedure"]},
+      "hi":{definition:"Hi 👋! Kaise ho? Kanoon se related kuch poochna hai?",articles:["Indian Constitution","Bail Explained","Rights in India"]},
+      "hey":{definition:"Hey 😃! Batao, kis topic pe baat karni hai?",articles:["IPC Sections","Fundamental Rights","Supreme Court Cases"]},
+      "namaste":{definition:"Namaste 🙏! Main NYAI hoon, kanoon ko easy banane ke liye.",articles:["Intro to Constitution","Your Legal Rights","FIR Basics"]},
+      "thanks":{definition:"Koi baat nahi 😇, main hamesha help ke liye yahan hoon.",articles:["What is IPC?","Fundamental Rights","Bail Procedures"]},
+      "thank you":{definition:"Aapka shukriya 🙏! Mujhe khushi hui help karke.",articles:["Supreme Court Judgments","Human Rights","Constitution Basics"]},
+      "good morning":{definition:"Good Morning 🌞! Aaj kaun sa legal topic samajhna hai?",articles:["Fundamental Rights","IPC Basics","Bail Explained"]},
+      "good night":{definition:"Good Night 🌙! Kal fir se kanoon ki baatein karenge.",articles:["Constitution Amendments","Bail Cases","Rights Overview"]},
+      "ok":{definition:"Ok 👍, main ready hoon.",articles:["IPC Sections","Fundamental Rights","Legal Rights"]},
+      "cool":{definition:"Cool 😎! Chalo kanoon explore karte hain.",articles:["IPC & CrPC","Fundamental Duties","Bail Info"]},
+      "nice":{definition:"Nice 👍! Ab bolo kis bare me jaana hai?",articles:["FIR Procedure","Rights Explained","Constitution"]},
+      "great":{definition:"Great 🎉! Main ready hoon aapke legal sawaalon ke liye.",articles:["IPC Basics","Human Rights","Supreme Court"]},
+      "how are you":{definition:"Main theek hoon 🤖, aap kaise ho?",articles:["Your Rights","Constitution","Bail"]},
+      "who are you":{definition:"Main NYAI hoon, ek Indian Legal AI Assistant.",articles:["About IPC","Know Your Rights","Constitution Basics"]},
+      "your name":{definition:"Mera naam NYAI hai ⚖️.",articles:["Legal Rights","Supreme Court Cases","Fundamental Duties"]},
+      "bye":{definition:"Bye 👋, apna khayal rakhna!",articles:["IPC Summary","Rights in India","Constitution"]},
+      "see you":{definition:"See you soon 👋!",articles:["IPC Essentials","Your Rights","Supreme Court"]},
+      "take care":{definition:"Take care 🙏, safe raho.",articles:["IPC Law","Constitution","Human Rights"]},
+      "what’s up":{definition:"Sab mast hai 😄, aap batao?",articles:["IPC Cases","FIR Info","Rights in India"]}
+    };
+      
+      const addMessage = (content, sender = 'bot') => {
+        const messageWrapper = document.createElement('div');
+        messageWrapper.className = `msg ${sender}`;
+        
+        // IMPORTANT: User ka input hamesha .textContent se daalo. .innerHTML se daala toh XSS attack ho sakta hai! Security first, bhai.
+        if (sender === 'user') {
+          messageWrapper.textContent = content;
+        } else {
+          messageWrapper.innerHTML = content;
+        }
+        
+        const timestamp = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        const metaDiv = document.createElement('div');
+        metaDiv.className = 'meta';
+        metaDiv.textContent = timestamp;
+        messageWrapper.appendChild(metaDiv);
+
+        messagesDiv.appendChild(messageWrapper);
+        messagesDiv.scrollTop = messagesDiv.scrollHeight;
+      };
+
+      const findResponse = (text) => {
+        const lowercasedText = text.toLowerCase().trim();
+        for (const key in knowledgeBase) {
+          if (lowercasedText.includes(key)) {
+            const match = knowledgeBase[key];
+            const articlesHtml = match.articles.length > 0
+              ? `<br><br>📌 <strong>Related Sections/Articles:</strong><ul class='article-list'>${match.articles.map(a => `<li>${a}</li>`).join("")}</ul>`
+              : "";
+            return match.definition + articlesHtml;
+          }
+        }
+        return "I’m still learning 🤖. Try asking about 'IPC', 'FIR', or 'Bail'.";
+      };
+
+      const handleSendMessage = () => {
+        const userText = userInput.value.trim();
+        if (!userText) return;
+        
+        addMessage(userText, 'user');
+        userInput.value = '';
+        
+        const typingIndicator = document.createElement('div');
+        typingIndicator.className = 'msg bot';
+        typingIndicator.innerHTML = 'NYAI is typing…';
+        messagesDiv.appendChild(typingIndicator);
+        messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        
+        // User ko lage ki bot 'soch' raha hai, isliye thoda delay. Good UX.
+        setTimeout(() => {
+          messagesDiv.removeChild(typingIndicator);
+          const botResponse = findResponse(userText);
+          addMessage(botResponse, 'bot');
+        }, 800);
+      };
+      
+      const applyTheme = (themeName) => {
+          document.documentElement.setAttribute('data-theme', themeName);
+          themeIcon.textContent = themeName === 'light' ? '🌙' : '☀️';
+          localStorage.setItem('theme', themeName); // User ki choice save karlo.
+      };
+
+      const toggleTheme = () => {
+          const currentTheme = localStorage.getItem('theme') || 'dark';
+          const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+          applyTheme(newTheme);
+      };
+      
+      // Saare event listeners yahan hain.
+      sendBtn.addEventListener('click', handleSendMessage);
+      
+      userInput.addEventListener('keydown', (event) => {
+        if (event.key === 'Enter' && !event.shiftKey) {
+          event.preventDefault(); // Form submit hone se roko.
+          handleSendMessage();
+        }
+      });
+      
+      suggestionChips.forEach(chip => {
+        chip.addEventListener('click', () => {
+          userInput.value = chip.getAttribute('data-q');
+          handleSendMessage();
+        });
+      });
+
+      themeToggle.addEventListener('click', toggleTheme);
+      
+      resetBtn.addEventListener('click', () => {
+        // Clear messages div
+        messagesDiv.innerHTML = '';
+        
+        // Add welcome message again
+        setTimeout(() => {
+          addMessage("Hello! 👋 I'm NYAI. Ask me about legal terms like 'IPC', 'FIR', or 'Bail'.", 'bot');
+        }, 300);
+      });
+      
+      // Page load hote hi ye sab run hoga.
+      const savedTheme = localStorage.getItem('theme') || 'dark';
+      applyTheme(savedTheme);
+
+      setTimeout(() => {
+        addMessage("Hello! 👋 I'm NYAI. Ask me about legal terms like 'IPC', 'FIR', or 'Bail'.", 'bot');
+      }, 500);
+
+    });
+  </script>
+</body>
+</html>
