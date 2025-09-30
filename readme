@@ -1,0 +1,83 @@
+# NYAI - Legal AI Assistant ⚖️
+
+NYAI is a simple, front-end-only web application that functions as a legal AI assistant. It's designed to make basic Indian legal terms easy to understand for everyone. Users can type in a legal keyword (like "IPC", "FIR", "Bail") or a simple greeting, and the chatbot will provide a concise definition and a list of related topics.
+
+This project is built with vanilla HTML, CSS, and JavaScript, focusing on a clean user interface, good user experience, and a straightforward, keyword-based response system.
+
+---
+
+### ✨ Live Demo
+
+[Link to your live demo here]
+
+
+---
+
+## 🚀 Features
+
+* **Interactive Chat Interface**: Clean, modern chat UI for displaying user queries and bot responses.
+* **Keyword-Based Responses**: The bot's logic is powered by a pre-defined JavaScript object (`knowledgeBase`) containing over 75 legal and conversational keywords.
+* **Suggestion Chips**: Quick-access buttons for common legal terms to guide the user.
+* **Typing Indicator**: A "NYAI is typing..." message enhances the user experience by simulating a more natural conversation flow.
+* **Light & Dark Mode**: A theme toggle allows users to switch between a light and dark interface. The user's preference is saved in `localStorage`.
+* **Reset Chat**: A button to easily clear the current conversation and start fresh.
+* **Fully Responsive**: The design is optimized for a seamless experience on both desktop and mobile devices.
+* **Zero Dependencies**: Built with pure HTML, CSS, and JavaScript. No external libraries or frameworks are needed.
+* **Client-Side Only**: Runs entirely in the browser. No backend or database is required, ensuring user privacy as no data is stored.
+
+---
+
+## 🛠️ Technology Stack
+
+* **HTML5**: For the structure and content of the web page.
+* **CSS3**: For styling, layout, and responsiveness.
+    * **CSS Variables**: Used extensively for easy theming (light/dark modes).
+    * **Flexbox & Grid**: For modern, responsive layouts.
+* **JavaScript (ES6+)**: For all the interactive logic, including DOM manipulation, event handling, and the chatbot's response mechanism.
+
+---
+
+## 📂 File Structure
+
+The project has a simple and flat file structure:
+├── index.html      
+├── style.css       
+└── script.js 
+
+---
+
+## ⚙️ How It Works
+
+The core logic of the chatbot is contained within `script.js`:
+
+1.  **DOM Initialization**: The script waits for the `DOMContentLoaded` event to ensure all HTML elements are loaded before it tries to access them.
+2.  **Knowledge Base**: A large JavaScript object named `knowledgeBase` acts as the chatbot's "brain". It maps specific keywords (e.g., `"fir"`) to an object containing a `definition` and an array of related `articles`.
+3.  **Event Listeners**: Event listeners are attached to the "Send" button, the input field (for the 'Enter' key), the theme toggle, the reset button, and the suggestion chips.
+4.  **Sending a Message**: The `handleSendMessage()` function is the primary controller. It:
+    * Reads the user's input.
+    * Displays the user's message in the chat window.
+    * Shows a "typing..." indicator for 800ms to simulate a response delay.
+    * Calls the `findResponse()` function to get the bot's reply.
+    * Displays the bot's response in the chat window.
+5.  **Finding a Response**: The `findResponse(text)` function converts the user's input to lowercase and iterates through the `knowledgeBase`. It uses `text.includes(key)` to find the first matching keyword and then formats a response from the corresponding definition and articles. If no keyword is found, it returns a default message.
+
+
+---
+
+## ✏️ Customization
+
+It's very easy to expand the chatbot's knowledge.
+
+To add a new keyword, simply add a new entry to the `knowledgeBase` object in `script.js`. Follow the existing format:
+
+```javascript
+const knowledgeBase = {
+  // ... existing keywords
+
+  "new_keyword": {
+    definition: "This is the explanation for the new keyword.",
+    articles: ["Related Topic 1", "Related Topic 2", "Another Article"]
+  },
+
+  // ... more keywords
+};
